@@ -1,0 +1,15 @@
+C:\Users\Agnieszka\Desktop\studia\GIT\statki\klient\battleship\battleship\bin\Release\battleship.exe.config
+C:\Users\Agnieszka\Desktop\studia\GIT\statki\klient\battleship\battleship\bin\Release\battleship.exe
+C:\Users\Agnieszka\Desktop\studia\GIT\statki\klient\battleship\battleship\bin\Release\battleship.pdb
+C:\Users\Agnieszka\Desktop\studia\GIT\statki\klient\battleship\battleship\obj\Release\View\GameWindow.g.cs
+C:\Users\Agnieszka\Desktop\studia\GIT\statki\klient\battleship\battleship\obj\Release\View\MainWindow.g.cs
+C:\Users\Agnieszka\Desktop\studia\GIT\statki\klient\battleship\battleship\obj\Release\App.g.cs
+C:\Users\Agnieszka\Desktop\studia\GIT\statki\klient\battleship\battleship\obj\Release\battleship_MarkupCompile.cache
+C:\Users\Agnieszka\Desktop\studia\GIT\statki\klient\battleship\battleship\obj\Release\battleship_MarkupCompile.lref
+C:\Users\Agnieszka\Desktop\studia\GIT\statki\klient\battleship\battleship\obj\Release\View\GameWindow.baml
+C:\Users\Agnieszka\Desktop\studia\GIT\statki\klient\battleship\battleship\obj\Release\View\MainWindow.baml
+C:\Users\Agnieszka\Desktop\studia\GIT\statki\klient\battleship\battleship\obj\Release\battleship.g.resources
+C:\Users\Agnieszka\Desktop\studia\GIT\statki\klient\battleship\battleship\obj\Release\battleship.Properties.Resources.resources
+C:\Users\Agnieszka\Desktop\studia\GIT\statki\klient\battleship\battleship\obj\Release\battleship.csproj.GenerateResource.Cache
+C:\Users\Agnieszka\Desktop\studia\GIT\statki\klient\battleship\battleship\obj\Release\battleship.exe
+C:\Users\Agnieszka\Desktop\studia\GIT\statki\klient\battleship\battleship\obj\Release\battleship.pdb

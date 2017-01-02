@@ -1,0 +1,20 @@
+﻿<Window x:Class="battleship.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:battleship"
+        mc:Ignorable="d"
+        Title="Statki" Height="260" Width="300">
+    <Grid>
+        <Label x:Name="IpLabel" Content="Adres IP" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,10,0,0" Width="70"/>
+        <Label x:Name="PortLabel" Content="Port" HorizontalAlignment="Left" Margin="10,40,0,0" VerticalAlignment="Top" Width="70"/>
+        <Label x:Name="UsernameLabel" Content="Username" HorizontalAlignment="Left" Margin="10,70,0,0" VerticalAlignment="Top" Width="70"/>
+        <TextBox x:Name="IpText" HorizontalAlignment="Left" Height="20" Margin="91,14,0,0" TextWrapping="Wrap" Text="127.0.0.1" VerticalAlignment="Top" Width="120"/>
+        <TextBox x:Name="PortText" HorizontalAlignment="Left" Height="20" Margin="91,44,0,0" TextWrapping="Wrap" Text="1234" VerticalAlignment="Top" Width="120"/>
+        <TextBox x:Name="UsernameText" HorizontalAlignment="Left" Height="20" Margin="91,74,0,0" TextWrapping="Wrap" Text="Player" VerticalAlignment="Top" Width="120"/>
+        <Button x:Name="JoinGame" Content="Dołącz do gry" HorizontalAlignment="Left" Margin="80,124,0,0" VerticalAlignment="Top" Width="140" Height="35" Click="JoinGame_Click"/>
+        <Button x:Name="EndGame" Content="Zakończ grę" HorizontalAlignment="Left" Margin="80,173,0,0" VerticalAlignment="Top" Width="140" Height="35" Click="EndGame_Click"/>
+       
+    </Grid>
+</Window>
