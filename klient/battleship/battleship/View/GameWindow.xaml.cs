@@ -64,6 +64,7 @@ namespace battleship.View
                     {
                         GameCore.GameFaze = 4;
                         conf.InfoText = "PRZEGRANA";
+                        MessageBox.Show("PRZEGRANA");
                     }
                 }
                 if(conf.EndGame)

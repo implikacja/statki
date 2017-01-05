@@ -78,15 +78,11 @@ namespace battleship.Model
                         if (txt.Length > 0) txt = "Pozostałe statki \n" + txt;
                         conf.InfoText = txt;
                         if(ShipsOnMap<10)conf.InfoText = "Utwórz statek " + mapShip[ShipsOnMap].type + "-masztowy";
-                        if (ShipsOnMap==10)
-                        {
-                            SendShips();
-                            for(int i = 0;i<100;i++)
-                            {
-                                fields[i].Background = "Lavender";
-                            }
 
-                        }
+                    }
+                    if (ShipsOnMap == 10)
+                    {
+                        SendShips(ref fields);
                     }
                     return true;
                 }
@@ -209,7 +205,7 @@ namespace battleship.Model
             return false;
         }
 
-        public void SendShips()
+        public void SendShips(ref Field[] fields)
         {
             //Przesłanie statków
             for (int i = 0; i < 10; i++)
@@ -239,7 +235,10 @@ namespace battleship.Model
                 GameFaze = 3;
                 conf.InfoText = "Przeciwnik zaczyna";
             }
-
+            for (int i = 0; i < 100; i++)
+            {
+                fields[i].Background = "Lavender";
+            }
 
         }
 
@@ -270,6 +269,7 @@ namespace battleship.Model
                 MarkSinked(id, ref fields);
                 GameFaze = 4;
                 conf.InfoText = "WYGRANA!";
+                MessageBox.Show("WYGRANA!");
             }
             return ans;
         }
