@@ -59,6 +59,7 @@ namespace battleship.Model
             coordsDone--;
             return true;
         }
+
     }
 
 

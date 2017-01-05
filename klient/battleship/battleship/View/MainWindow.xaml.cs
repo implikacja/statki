@@ -30,7 +30,13 @@ namespace battleship
 
         private void JoinGame_Click(object sender, RoutedEventArgs e)
         {
-            if (conf.JoinServer(IpText.Text, PortText.Text, UsernameText.Text))
+            string Username = UsernameText.Text;
+            if (Username.Contains("&"))
+            {
+                MessageBox.Show("Username nie może zawierać '&'. Twoje Username to 'Player'.");
+                Username = "Player";
+            }
+            if (conf.JoinServer(IpText.Text, PortText.Text, Username))
             {
                 GameWindow w = new GameWindow();
                 w.Show();
@@ -50,5 +56,7 @@ namespace battleship
         {
             this.Close();
         }
+
+
     }
 }

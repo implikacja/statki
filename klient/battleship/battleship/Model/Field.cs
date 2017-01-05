@@ -55,13 +55,13 @@ namespace battleship.Model
                     case FieldType.Unknown:
                         return "Lavender";
                     case FieldType.Missed:
-                        return "DimGrey";
+                        return "Silver";
                     case FieldType.Hitted:
                         return "MediumOrchid";
                     case FieldType.Sinked:
                         return "DarkMagenta";
                     case FieldType.Builded:
-                        return "MediumBlue";
+                        return "RoyalBlue";
                     case FieldType.Ship:
                         return "MidnightBlue";
                     default:
@@ -72,13 +72,13 @@ namespace battleship.Model
             {
                 if (value == "Lavender")
                     Type = FieldType.Unknown;
-                else if (value == "DimGrey")
+                else if (value == "Silver")
                     Type = FieldType.Missed;
                 else if (value == "MediumOrchid")
                     Type = FieldType.Hitted;
                 else if (value == "DarkMagenta")
                     Type = FieldType.Sinked;
-                else if (value == "MediumBlue")
+                else if (value == "RoyalBlue")
                     Type = FieldType.Builded;
                 else if (value == "MidnightBlue")
                     Type = FieldType.Ship;

@@ -13,6 +13,7 @@
 #include <pthread.h>
 #include <string>
 #include <iostream>
+#include <cstdlib>
 using namespace std;
 
 #define SERVER_PORT 1234
@@ -30,74 +31,170 @@ struct thread_data_t
 //struktura przechowuj¹ca informacje o grze
 struct information
 {
-	int myFields[100];
+	int myFields[100];//0 pole puste -1 pole trafione 1-10 nr statku, którego maszt znajduje siê na tym polu
 	string Username;
+	int shipsSinked;
+	int shipNumber;
+	int gameFaze;//0-powitanie 1-przesyl statków 2-gra+wynik
 };
 
 int players[GAME_NUMBER*2];//sockety pod³¹czonych graczy
 
-information info[10];
+information info[GAME_NUMBER*2];
 
 bool SendMessage(string message, int playerSocket)
 {
-
-	for (int i = 0; i < message.size(); i += BUF_SIZE)
-	{
-		string tmp = message.substr(i, BUF_SIZE);
-		char* cmsg = new char[tmp.length() + 1];
-		strcpy(cmsg, tmp.c_str());
-		write(playerSocket, cmsg, strlen(cmsg));
-		delete[] cmsg;
-	}
+	message = message + '&';
+	char* cmsg = new char[message.length() + 1];
+	strcpy(cmsg, message.c_str());
+	write(playerSocket, cmsg, strlen(cmsg));
+	delete[] cmsg;
 	return true;
+}
+
+string GetMessage(int playerSocket)
+{
+	int k = 0;
+	string allData = "";
+	bool received = false;
+	while(!received)
+	{
+		char message[BUF_SIZE];
+		bzero(message, BUF_SIZE);
+		k = read(playerSocket, message, sizeof(message));
+		string data(message);
+		allData += data;
+		if (allData[allData.size() - 1]=='&')
+			received = true;
+	}
+	allData = allData.substr(0, allData.size() - 1);
+	return allData;
+
+
 }
 
 
 void *ThreadBehavior(void *t_data)
 {
     thread_data_t *th_data = (struct thread_data_t*)t_data;
-	char message[BUF_SIZE];
-	bzero(message, BUF_SIZE);
+	bool EndGame = false;
 	int id = (*th_data).id;
-	int gameFaze = 0;//0-powitanie 1-przesyl statków 2-gra 3-wyniki
-	while(read((*th_data).socket,message, sizeof(message))>0)
+	int enemyId;
+	if (id % 2 == 0)enemyId = id + 1;
+	else enemyId = id - 1;
+	pthread_mutex_lock(&mutex);
+	info[id].gameFaze = 0;
+	pthread_mutex_unlock(&mutex);
+	while(!EndGame)
 	{
-		printf("Odbieram: %d %s\n", id, message);
-		string msg(message);
-		if (msg.substr(0, 2) == "hi" && gameFaze == 0)
+		string msg = GetMessage((*th_data).socket);
+		cout << "Odbieram " << id << " " << msg<<endl;
+
+		if (msg.substr(0, 2) == "hi" && info[id].gameFaze == 0)
 		{
 			pthread_mutex_lock(&mutex);
 				if (info[id].Username.size()==0)
 					info[id].Username = msg.substr(2);
-
-                if(id % 2 == 0)
-                {
-					if ((info[id + 1].Username).size() > 0)
+					info[id].gameFaze = 1;
+					if ((info[enemyId].Username).size() > 0)
 					{
-						string answer = "hi" + info[id + 1].Username;
+						string answer = "hi" + info[enemyId].Username;
 						SendMessage(answer, players[id]);
-						SendMessage("hi" + info[id].Username, players[id + 1]);
-						gameFaze = 1;
+						SendMessage("hi" + info[id].Username, players[enemyId]);
+						for (int i = 0; i < 100; i++)
+						{
+							info[id].myFields[i] = 0;
+							info[enemyId].myFields[i] = 0;
+							info[id].shipNumber = 1;
+							info[enemyId].shipNumber = 1;
+						}
+							
 					}
+			pthread_mutex_unlock(&mutex);
+		}
+		else if(msg.substr(0,4) == "ship" && info[id].gameFaze == 1)
+		{
+			pthread_mutex_lock(&mutex);
+			msg.erase(msg.begin(), msg.begin()+4);
+			for (int j = 0; j < msg.size(); j += 2)
+			{
+				int coord = atoi(msg.substr(j,2).c_str());
+				info[id].myFields[coord] = info[id].shipNumber;
+			}
+			SendMessage("ok", players[id]);
+			info[id].shipNumber++;
+			if (info[id].shipNumber == 11 && info[enemyId].shipNumber == 11)
+			{
+				if (id % 2 == 0)
+				{
+					SendMessage("first", players[id]);
+					SendMessage("second", players[enemyId]);
+				}
+				else
+				{
+					SendMessage("second", players[id]);
+					SendMessage("first", players[enemyId]);
 
-                }
-                else
-                {
-					if ((info[id - 1].Username).size() > 0)
-					{
-						string answer = "hi" + info[id - 1].Username;
-						SendMessage(answer, players[id]);
-						SendMessage("hi" + info[id].Username, players[id - 1]);
-						gameFaze = 1;
-					}
-
-                }
+				}
+				info[id].shipsSinked = 0;
+				info[enemyId].shipsSinked = 0;
+				info[id].gameFaze = 2;
+				info[enemyId].gameFaze = 2;
+			}
 
 			pthread_mutex_unlock(&mutex);
 		}
+		else if (msg.substr(0, 2) == "if" && info[id].gameFaze == 2)
+		{
+			
+			msg.erase(msg.begin(), msg.begin() + 2);
+			int idk = atoi(msg.c_str());
+			pthread_mutex_lock(&mutex);
+			if (info[enemyId].myFields[idk] == 0)
+			{
+				SendMessage("miss", players[id]);
+				SendMessage("go", players[enemyId]);
+			}
+			else if (info[enemyId].myFields[idk] > 0)
+			{
+				bool sinked = true;
+				for (int i = 0; i < 100; i++)
+				{
+					if (info[enemyId].myFields[i] == info[enemyId].myFields[idk] && i != idk)
+					{
+						sinked = false;
+						break;
+					}
+				}
+				info[enemyId].myFields[idk] *= -1;
+				if (sinked)
+				{
+					info[id].shipsSinked++;
+					if (info[id].shipsSinked == 10)
+					{
+						SendMessage("win", players[id]);
+						SendMessage("lose", players[enemyId]);
+						EndGame = true;
+					}
+					else
+						SendMessage("sink", players[id]);
+						
+				}
+				else
+				{
+					SendMessage("hit", players[id]);
+				}
 
-		bzero(message, BUF_SIZE);
+			}
+			pthread_mutex_unlock(&mutex);
 
+		}
+		else if (msg == "exit")
+		{
+			SendMessage("exit", players[enemyId]);
+			EndGame = true;
+		}
+		
 	}
 
 	printf("Umiera watek klienta %d \n",(*th_data).socket);
