@@ -269,7 +269,7 @@ namespace battleship.Model
                 MarkSinked(id, ref fields);
                 GameFaze = 4;
                 conf.InfoText = "WYGRANA!";
-                MessageBox.Show("WYGRANA!");
+                MessageBox.Show("WYGRANA! Zamknij okno.");
             }
             return ans;
         }

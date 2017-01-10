@@ -36,6 +36,7 @@ struct information
 	int shipsSinked;
 	int shipNumber;
 	int gameFaze;//0-powitanie 1-przesyl statków 2-gra+wynik
+	bool EndGame;
 };
 
 int players[GAME_NUMBER*2];//sockety pod³¹czonych graczy
@@ -47,7 +48,12 @@ bool SendMessage(string message, int playerSocket)
 	message = message + '&';
 	char* cmsg = new char[message.length() + 1];
 	strcpy(cmsg, message.c_str());
-	write(playerSocket, cmsg, strlen(cmsg));
+	int k = write(playerSocket, cmsg, strlen(cmsg));
+	if (k<0)
+	{
+		fprintf(stderr, "B³ad wysy³ania.\n");
+		return "exitexit";
+	}
 	delete[] cmsg;
 	return true;
 }
@@ -57,17 +63,25 @@ string GetMessage(int playerSocket)
 	int k = 0;
 	string allData = "";
 	bool received = false;
+	char *message = new char[1];
 	while(!received)
 	{
-		char message[BUF_SIZE];
-		bzero(message, BUF_SIZE);
-		k = read(playerSocket, message, sizeof(message));
+
+		message[0] = 0;
+		k = read(playerSocket, message, 1);
+		if(k<0)
+		{
+			perror("B³ad odbierania.\n");
+			return "exitexit";
+		}
 		string data(message);
 		allData += data;
-		if (allData[allData.size() - 1]=='&')
+		if (message[0]=='&')
 			received = true;
+
 	}
 	allData = allData.substr(0, allData.size() - 1);
+	delete message;
 	return allData;
 
 
@@ -77,16 +91,20 @@ string GetMessage(int playerSocket)
 void *ThreadBehavior(void *t_data)
 {
     thread_data_t *th_data = (struct thread_data_t*)t_data;
-	bool EndGame = false;
 	int id = (*th_data).id;
 	int enemyId;
 	if (id % 2 == 0)enemyId = id + 1;
 	else enemyId = id - 1;
 	pthread_mutex_lock(&mutex);
 	info[id].gameFaze = 0;
+	info[id].EndGame = false;
+	int EndGame = info[id].EndGame;
 	pthread_mutex_unlock(&mutex);
 	while(!EndGame)
 	{
+		pthread_mutex_lock(&mutex);
+			EndGame = info[id].EndGame;
+		pthread_mutex_unlock(&mutex);
 		string msg = GetMessage((*th_data).socket);
 		cout << "Odbieram " << id << " " << msg<<endl;
 
@@ -174,7 +192,6 @@ void *ThreadBehavior(void *t_data)
 					{
 						SendMessage("win", players[id]);
 						SendMessage("lose", players[enemyId]);
-						EndGame = true;
 					}
 					else
 						SendMessage("sink", players[id]);
@@ -191,8 +208,25 @@ void *ThreadBehavior(void *t_data)
 		}
 		else if (msg == "exit")
 		{
-			SendMessage("exit", players[enemyId]);
-			EndGame = true;
+			pthread_mutex_lock(&mutex);
+			if(!info[enemyId].EndGame)
+				SendMessage("exit", players[enemyId]);
+			info[id].EndGame = true;
+
+			pthread_mutex_unlock(&mutex);
+
+		}
+		else if (msg == "exitexit")
+		{
+
+			pthread_mutex_lock(&mutex);
+			if (!info[enemyId].EndGame)
+				SendMessage("exit", players[enemyId]);
+			if (!info[id].EndGame)
+				SendMessage("exit", players[id]);
+			info[id].EndGame = true;
+			info[enemyId].EndGame = true;
+			pthread_mutex_unlock(&mutex);
 		}
 		
 	}
@@ -282,7 +316,6 @@ int main(int argc, char* argv[])
 
    while(1)
    {
-		while(clients>=GAME_NUMBER*2);
 		printf("Czekam na polaczenie...\n");
        connection_socket_descriptor = accept(server_socket_descriptor, NULL, NULL);
        if (connection_socket_descriptor < 0)
@@ -290,8 +323,8 @@ int main(int argc, char* argv[])
            fprintf(stderr, "%s: B³¹d przy próbie utworzenia gniazda dla po³¹czenia.\n", argv[0]);
            exit(1);
        }
-
-       handleConnection(connection_socket_descriptor);
+	   if (clients == GAME_NUMBER * 2) close(connection_socket_descriptor);
+       else handleConnection(connection_socket_descriptor);
    }
 
    close(server_socket_descriptor);

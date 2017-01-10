@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Net.Sockets;
 using System.Runtime.CompilerServices;
@@ -41,34 +42,74 @@ namespace battleship.Model
         }
         public string GetMessage()
         {
-            int k = 0;
-            bool received = false;
-            String allData = "";
-            while(!received)
+            try
             {
-                Byte[] bytes = new Byte[1024];
-                k = 0;
-                k = ns.Read(bytes, 0, bytes.Length);
-                if (k < 0) MessageBox.Show("Bład odbierania");
-                String data = Encoding.ASCII.GetString(bytes, 0, k);
-                allData += data;
-                if ( allData[allData.Length - 1] == '&')
-                    received = true;
+                bool received = false;
+                String allData = "";
+                while (!received)
+                {
+                    Byte[] bytes = new Byte[1];
+                    int k = ns.Read(bytes, 0, bytes.Length);
+                    String data = Encoding.ASCII.GetString(bytes, 0, k);
+                    allData += data;
+                    if (allData[allData.Length - 1] == '&')
+                        received = true;
+                }
+                allData = allData.Substring(0, allData.Length - 1);
+                if (allData == "exit")
+                {
+                    EndGame = true;
+                }
+                return allData;
             }
-            allData = allData.Substring(0, allData.Length - 1);
-            if (allData == "exit")
+            catch (IOException)
             {
+                MessageBox.Show("Bład odbierania. Zamknij okno.");
                 EndGame = true;
+                return "";
             }
-            return allData;
+            catch (ArgumentOutOfRangeException)
+            {
+                MessageBox.Show("Bład odebierania. Zamknij okno.");
+                EndGame = true;
+                return "";
+            }
+            catch (SocketException)
+            {
+                MessageBox.Show("Bład odebierania.Rozłączono z serwerem. Zamknij okno.");
+                EndGame = true;
+                return "";
+            }
+
+
         }
 
         public bool SendMessage(string txt)
         {
-            txt = txt + "&";
-            Byte[] data = System.Text.Encoding.ASCII.GetBytes(txt);
-            ns.Write(data, 0, data.Length);   
-            return true;
+            try
+            {
+                txt = txt + "&";
+                Byte[] data = System.Text.Encoding.ASCII.GetBytes(txt);
+                ns.Write(data, 0, data.Length);
+                return true;
+            } catch (IOException)
+            {
+                MessageBox.Show("Bład wysyłania. Zamknij okno.");
+                EndGame = true;
+                return false;
+            }
+            catch(ArgumentOutOfRangeException)
+            {
+                MessageBox.Show("Bład wysyłania. Zamknij okno.");
+                EndGame = true;
+                return false;
+            }
+            catch (SocketException)
+            {
+                MessageBox.Show("Bład wysyłania.Rozłączono z serwerem. Zamknij okno.");
+                EndGame = true;
+                return false;
+            }
         }
 
         public bool JoinServer(string ip, string port, string Username)

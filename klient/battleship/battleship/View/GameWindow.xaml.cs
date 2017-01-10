@@ -64,13 +64,12 @@ namespace battleship.View
                     {
                         GameCore.GameFaze = 4;
                         conf.InfoText = "PRZEGRANA";
-                        MessageBox.Show("PRZEGRANA");
+                        MessageBox.Show("PRZEGRANA. Zamknij okno.");
                     }
                 }
                 if(conf.EndGame)
                 {
                     MessageBox.Show("Twój przeciwnik zrezygnował z gry. Zamknij okno.");
-                    conf.SendMessage("exit");
                 }
                     Thread.Sleep(100);
             }
